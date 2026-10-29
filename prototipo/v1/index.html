@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiciUrbana Express - v1 (Sistema Inicial con Fallo)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Alerta de advertencia del prototipo v1 -->
+  <div class="warning-banner">
+    ⚠️ <strong>PROTOTIPO v1 (DEFECTUOSO):</strong> Este sistema simula los fallos heurísticos (H1, H5, H9) detectados en el diagnóstico.
+    <a href="../v2/index.html" class="switch-link">👉 Ver Prototipo v2 Optimizado</a>
+  </div>
+
+  <div class="mobile-container" id="appRoot">
+    
+    <!-- Encabezado superior problemático (difícil de alcanzar con una mano) -->
+    <header class="header">
+      <div class="brand">BiciUrbana v1.0</div>
+      <div class="net-status">4G Móvil</div>
+    </header>
+
+    <main class="content">
+      <div class="station-info">
+        <h3>Estación Plaza Central #04</h3>
+        <p>Bicicletas disponibles: 8 | Anclajes libres: 12</p>
+      </div>
+
+      <!-- Formulario inicial sin accesibilidad adecuada -->
+      <form id="unlockForm" class="unlock-form" onsubmit="event.preventDefault();">
+        <div class="form-group">
+          <label for="dockNumber">Código del anclaje:</label>
+          <input type="text" id="dockNumber" placeholder="Ej. 14">
+        </div>
+
+        <div class="buttons-top">
+          <!-- Botón primario en la zona superior (lejos del pulgar) -->
+          <button type="button" id="btnUnlock" class="btn-unlock">Desbloquear Ahora ($5.00)</button>
+        </div>
+      </form>
+
+      <!-- Estado de cobro y saldo no transparente -->
+      <div class="balance-card">
+        <span>Depósito de garantía: $5.00 USD</span>
+        <span id="txStatus" class="tx-status">Sin cobros pendientes</span>
+      </div>
+
+      <div class="instructions">
+        <p>• Acércate al anclaje correspondiente.</p>
+        <p>• Presiona Desbloquear para obtener el código.</p>
+      </div>
+    </main>
+
+    <!-- Pantalla Blanca de Error Fatal (Simulación de H1 y H9) -->
+    <div id="whiteScreenOverlay" class="white-screen-overlay" style="display: none;">
+      <div id="whiteScreenContent" class="white-screen-content">
+        <!-- Inicialmente congelado en blanco total -->
+      </div>
+    </div>
+
+    <!-- Modal de error tardío con cobro duplicado y datos borrados -->
+    <div id="errorModal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header text-danger">❌ Error 504 Gateway Timeout</div>
+        <div class="modal-body">
+          <p>Se perdió la conexión con el servidor de la estación.</p>
+          <div class="charge-alert">
+            <strong>AVISO FINANCIERO:</strong> Se ha debitado <strong>$5.00 USD</strong> de tu tarjeta asociada (Transacción #TX-89211), pero el anclaje físico <u>no fue liberado</u>.
+          </div>
+          <p class="text-muted">El formulario ha sido restablecido. Por favor vuelve a comenzar.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnCloseError" class="btn-secondary">Aceptar y volver</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
