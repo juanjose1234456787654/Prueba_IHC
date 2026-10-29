@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiciUrbana Express - v2 (Accesible & Resiliente)</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Barra de control de simulación IHC (para el evaluador docente) -->
+  <header class="eval-bar" role="toolbar" aria-label="Controles de evaluación IHC">
+    <div class="eval-bar-inner">
+      <span class="eval-badge">🧪 MODO DE PRUEBA IHC:</span>
+      <div class="sim-toggle-group">
+        <label for="networkSimulationSelect" class="sr-only">Seleccionar condición de red</label>
+        <select id="networkSimulationSelect" class="sim-select" tabindex="0">
+          <option value="normal">🟢 Conexión Normal (Éxito directo)</option>
+          <option value="microcorte" selected>🟡 Simular Microcorte de Red (RF-02 / H9)</option>
+        </select>
+      </div>
+      <a href="../v1/index.html" class="v1-comparison-link" tabindex="0" title="Ver sistema con fallo inicial">↩ Ver v1 Defectuoso</a>
+    </div>
+  </header>
+
+  <!-- Contenedor móvil ergonómico (Mobile First - Thumb Zone) -->
+  <div class="app-shell" id="appShell">
+
+    <!-- Región Viva de Accesibilidad para Lectores de Pantalla (WCAG 4.1.3) -->
+    <div id="statusLiveRegion" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Barra de Estado Superior de la Estación -->
+    <div class="station-header">
+      <div class="station-meta">
+        <span class="network-indicator" id="networkPill">
+          <span class="dot-led"></span>
+          <span id="networkText">4G Red Estable</span>
+        </span>
+        <span class="security-badge" id="securityBadge">🛡️ Fondos 100% Seguros</span>
+      </div>
+      <div class="station-title-row">
+        <div>
+          <h1 class="station-name">Estación Plaza Central #04</h1>
+          <p class="station-details">12 bicicletas listas • Retiro express en 30s</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREA DE CONTENIDO DINÁMICO (VISTAS) -->
+    <main class="main-flow" id="mainFlow">
+
+      <!-- ========================================================
+           VISTA 1: FORMULARIO DE DESBLOQUEO EXPRESS
+           ======================================================== -->
+      <section id="viewForm" class="flow-view active" aria-labelledby="formTitle">
+        <div class="prompt-card">
+          <h2 id="formTitle" class="prompt-title">¿Qué bicicleta vas a retirar?</h2>
+          <p class="prompt-subtitle">Ingresa el número impreso en el anclaje físico.</p>
+        </div>
+
+        <form id="dockForm" class="dock-form" novalidate onsubmit="return false;">
+          
+          <!-- Campo Numérico Ergonómico -->
+          <div class="input-container">
+            <label for="dockInput" class="input-label">Número de anclaje (1 al 99):</label>
+            <div class="input-wrapper">
+              <span class="input-prefix">#</span>
+              <input 
+                type="text" 
+                id="dockInput" 
+                class="dock-input" 
+                inputmode="numeric" 
+                pattern="[0-9]*" 
+                maxlength="2" 
+                placeholder="14" 
+                autocomplete="off" 
+                tabindex="0"
+                aria-describedby="dockHelpText dockErrorMsg"
+                aria-required="true"
+                autofocus
+              >
+            </div>
+            <span id="dockHelpText" class="input-help">Usa el teclado o los accesos rápidos inferiores.</span>
+            <span id="dockErrorMsg" class="input-error-msg" role="alert" style="display: none;"></span>
+          </div>
+
+          <!-- Selector rápido de anclajes con una sola mano (Thumb Zone Media) -->
+          <div class="quick-docks" role="group" aria-label="Accesos rápidos a anclajes frecuentes">
+            <span class="quick-label">Selección rápida con pulgar:</span>
+            <div class="quick-buttons-grid">
+              <button type="button" class="btn-chip" data-dock="12" tabindex="0">#12</button>
+              <button type="button" class="btn-chip active-chip" data-dock="14" tabindex="0">#14</button>
+              <button type="button" class="btn-chip" data-dock="15" tabindex="0">#15</button>
+              <button type="button" class="btn-chip" data-dock="18" tabindex="0">#18</button>
+            </div>
+          </div>
+
+          <!-- Zona de Acciones Ergonómicas (Thumb Zone Inferior) -->
+          <div class="bottom-action-bar">
+            <button type="submit" id="btnUnlock" class="btn btn-primary" tabindex="0">
+              <span class="btn-text">Desbloquear Bicicleta</span>
+              <span class="btn-shortcut">(Enter)</span>
+            </button>
+            <div class="guarantee-note">
+              <span>💳 Depósito de garantía: $5.00</span>
+              <span class="note-separator">•</span>
+              <span class="text-success">Solo se cobra al liberar</span>
+            </div>
+          </div>
+
+        </form>
+      </section>
+
+
+      <!-- ========================================================
+           VISTA 2: PROCESAMIENTO ASÍNCRONO (RF-01 / H1)
+           ======================================================== -->
+      <section id="viewLoading" class="flow-view" aria-labelledby="loadingTitle" aria-hidden="true">
+        <div class="status-card loading-card">
+          <div class="spinner-wrapper">
+            <div class="spinner" role="progressbar" aria-label="Conectando con la estación"></div>
+          </div>
+          <h2 id="loadingTitle" class="status-title">Conectando con la estación...</h2>
+          <p class="status-desc">
+            Verificando el pestillo electrónico del anclaje <strong id="loadingDockBadge" class="dock-badge">#14</strong>.
+          </p>
+
+          <div class="step-progress-list">
+            <div class="progress-step done">
+              <span class="step-icon">✓</span>
+              <span>Clave transaccional generada (Idempotente)</span>
+            </div>
+            <div class="progress-step active-step">
+              <span class="step-icon">◌</span>
+              <span>Enlace con el controlador de anclaje</span>
+            </div>
+            <div class="progress-step pending">
+              <span class="step-icon">○</span>
+              <span>Generación de PIN temporal de liberación</span>
+            </div>
+          </div>
+
+          <div class="bottom-action-bar">
+            <button type="button" id="btnCancelLoading" class="btn btn-secondary" tabindex="0">
+              <span>Cancelar Operación</span>
+              <span class="btn-shortcut">(Esc)</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           VISTA 3: ERROR RECUPERABLE ANTE MICROCORTES (RF-02, RF-03 / H9)
+           ======================================================== -->
+      <section id="viewError" class="flow-view" aria-labelledby="errorTitle" aria-hidden="true">
+        <div class="status-card error-card">
+          <div class="error-icon-bubble">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+
+          <h2 id="errorTitle" class="status-title text-warning">Microcorte de Conexión</h2>
+          <p class="status-desc">
+            La señal de red se interrumpió durante el enlace con el servidor de la estación.
+          </p>
+
+          <!-- Tarjeta de Confianza Reflexiva (Norman) -->
+          <div class="safe-money-banner">
+            <div class="safe-icon">🛡️</div>
+            <div class="safe-text">
+              <strong>TU DINERO ESTÁ 100% PROTEGIDO</strong>
+              <p>No se ha realizado ningún cobro ni retención en tu tarjeta.</p>
+            </div>
+          </div>
+
+          <!-- Preservación de Datos (RF-02) -->
+          <div class="preserved-data-box">
+            <span class="preserved-label">Bicicleta seleccionada conservada:</span>
+            <div class="preserved-dock-pill">
+              <span class="dock-pill-tag">ANCLAJE</span>
+              <strong id="errorPreservedDock" class="dock-pill-number">#14</strong>
+            </div>
+            <span class="preserved-note">No necesitas volver a escribir el código.</span>
+          </div>
+
+          <!-- Acciones Ergonómicas en Thumb Zone con Foco Automático (RF-03, RF-05) -->
+          <div class="bottom-action-bar">
+            <button type="button" id="btnRetry" class="btn btn-retry" tabindex="0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span class="btn-text">Reintentar Conexión</span>
+              <span class="btn-shortcut">(Enter)</span>
+            </button>
+
+            <button type="button" id="btnCancelError" class="btn btn-secondary" tabindex="0">
+              <span>Cancelar y volver al inicio</span>
+              <span class="btn-shortcut">(Esc)</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ========================================================
+           VISTA 4: CONFIRMACIÓN Y ENTREGA DE PIN (RF-04 / MoT 1)
+           ======================================================== -->
+      <section id="viewSuccess" class="flow-view" aria-labelledby="successTitle" aria-hidden="true">
+        <div class="status-card success-card">
+          <div class="success-icon-bubble">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+
+          <h2 id="successTitle" class="status-title text-success">¡Anclaje #<span id="successDockNum">14</span> Desbloqueado!</h2>
+          <p class="status-desc">El pestillo físico ha sido liberado. Usa este PIN temporal:</p>
+
+          <!-- TARJETA DEL PIN DESTACADO (RF-04) -->
+          <div class="pin-display-card">
+            <span class="pin-card-label">TU PIN TEMPORAL DE SEGURIDAD</span>
+            <div class="pin-value-wrapper">
+              <span id="pinValue" class="pin-code" aria-label="PIN temporal de retiro: 8 4 9 2">8492</span>
+            </div>
+            
+            <button type="button" id="btnCopyPin" class="btn-copy-pin" tabindex="0" aria-label="Copiar PIN 8492 al portapapeles">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copyBtnText">Copiar PIN</span>
+            </button>
+          </div>
+
+          <!-- Temporizador Regresivo de Seguridad (120 segundos) -->
+          <div class="timer-card" role="timer" aria-live="off">
+            <div class="timer-icon">⏱️</div>
+            <div class="timer-details">
+              <span class="timer-label">Tiempo para retirar la bicicleta:</span>
+              <strong id="timerCounter" class="timer-countdown">120 segundos</strong>
+            </div>
+          </div>
+
+          <div class="instructions-steps">
+            <div class="instr-step">
+              <span class="step-num">1</span>
+              <span>Presiona el botón parpadeante en el anclaje físico.</span>
+            </div>
+            <div class="instr-step">
+              <span class="step-num">2</span>
+              <span>Digita el PIN <strong>8492</strong> o jala firmemente la bici.</span>
+            </div>
+          </div>
+
+          <div class="bottom-action-bar">
+            <button type="button" id="btnFinish" class="btn btn-primary" tabindex="0">
+              <span>Finalizar y Comenzar Viaje</span>
+              <span class="btn-shortcut">(Enter)</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
